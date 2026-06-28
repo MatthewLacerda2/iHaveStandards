@@ -27,7 +27,7 @@ the project-specific subsystems we chose to drop.
 | **Worktree-per-session** | ✅ keep | Every Claude session works in its own git worktree (DB-isolated). |
 | **Multi-tenancy** | ❌ strip | JWT stays, but auth is plain user-based — no `X-Tenant`, no `get_tenant`, no per-tenant scoping in repositories. Re-add by reintroducing a `tenant_id` FK + a `get_tenant` dependency. |
 | **AI agent layer** | ❌ strip | No `services/agents/`, no Gemini SDK, no streaming NDJSON chat. |
-| **PostGIS / spatial** | ❌ strip | Postgres ships **pgvector only** (`pgvector/pgvector:pg16` directly, no PostGIS layer). No `geoalchemy2`/`shapely`. |
+| **PostGIS / spatial / vector** | ❌ strip | SQLite has no spatial or vector extensions; the template ships none. No `geoalchemy2`/`shapely`, no `pgvector`. |
 | **Issues / PR governance** | ❌ strip from CLAUDE.md | Each repo runs its own lifecycle; the template's `CLAUDE.md` does not prescribe issue labels or PR-title conventions. |
 
 ## 1. Tech stack (pinned to what HidroFleet runs)
@@ -44,7 +44,7 @@ the project-specific subsystems we chose to drop.
 
 **Backend**
 - FastAPI on Python 3.12 (uvicorn)
-- SQLAlchemy 2.0 **async** + `asyncpg`
+- SQLAlchemy 2.0 **async** + `aiosqlite`
 - Pydantic v2 + `pydantic-settings`
 - `pyjwt` (auth), stdlib `hashlib` PBKDF2 (password hashing)
 - `slowapi` (rate limiting)
@@ -52,11 +52,10 @@ the project-specific subsystems we chose to drop.
 - Ruff (lint/format, dev-only)
 
 **Data**
-- PostgreSQL 16 + `pgvector` (image: `pgvector/pgvector:pg16`)
+- SQLite (file-based) via `aiosqlite` — no database server to install or run
 
 **Infra**
-- Docker Compose (postgres + backend + frontend)
-- Multi-stage frontend image (bun builder → nginx, reverse-proxies `/api/*`)
+- No containers — run the backend with `uvicorn` and the frontend with Vite
 - GitHub Actions calling the same `make` targets as local
 
 ## 2. Repository layout
@@ -67,14 +66,10 @@ the project-specific subsystems we chose to drop.
 ├── Makefile                       # single task runner; CI calls these targets
 ├── README.md
 ├── .env.example
-├── docker-compose.yml
 ├── .github/workflows/
 │   ├── backend.yml                # path-filtered, draft-skipped, PR-only
 │   └── frontend.yml
-├── docker/postgres/Dockerfile     # pgvector/pgvector:pg16 (no PostGIS)
 ├── backend/
-│   ├── Dockerfile                 # python:3.12-slim
-│   ├── .dockerignore              # ignores tests/, dev reqs, .env
 │   ├── pyproject.toml             # ruff config
 │   ├── pytest.ini
 │   ├── requirements.txt
@@ -98,9 +93,6 @@ the project-specific subsystems we chose to drop.
 │   ├── tools/house_lint.py        # custom AST linter (file/handler/test length)
 │   └── tests/                     # pytest; fixtures up the tree (conftest)
 └── frontend/
-    ├── Dockerfile                 # bun builder → nginx
-    ├── nginx.conf                 # serves SPA + proxies /api/*
-    ├── .dockerignore
     ├── package.json
     ├── bunfig.toml
     ├── components.json            # shadcn config
@@ -145,11 +137,13 @@ api/ (handlers)  →  schemas/ (Pydantic)  →  repositories/ (DB)  →  models/
   `@lru_cache def get_settings()`. `.env` + env vars; `extra="ignore"`.
 - **App bootstrap** (`main.py`): CORS → rate-limit middleware → logging
   middleware → versioned router (`/api/v1`). Lifespan runs `init_db()`:
-  `CREATE EXTENSION IF NOT EXISTS vector`, `Base.metadata.create_all` (additive
-  only — no Alembic in the skeleton; note it as the upgrade path), optional
-  seed of a default admin.
-- **`DATABASE_URL` normalization**: coerce `postgres://` / `postgresql://` to
-  `postgresql+asyncpg://` before building the engine.
+  `Base.metadata.create_all` (additive only — no Alembic in the skeleton; note
+  it as the upgrade path), optional seed of a default admin.
+- **`DATABASE_URL` normalization**: coerce a driverless `sqlite://` URL to
+  `sqlite+aiosqlite://` before building the engine.
+- **SQLite setup** (`configure_sqlite`): `PRAGMA foreign_keys=ON` plus handing
+  transaction control to SQLAlchemy, so foreign keys and the test's
+  savepoint-rollback recipe both work.
 - **Baseline endpoints**: `GET /`, `GET /health` (NOT logged), `GET /security.txt`.
 
 **Auth (single-tenant):**
@@ -237,29 +231,28 @@ header marker, not a filename convention.)*
 **Husky pre-commit** runs `lint-staged` (`eslint --fix` + `prettier`) on staged
 files; activates on `bun install`. CI sets `HUSKY=0`.
 
-## 6. Docker & Compose
+## 6. Running locally (no Docker)
 
-- **`docker-compose.yml`**: three services.
-  - `postgres` — built from `docker/postgres/Dockerfile` (`pgvector/pgvector:pg16`),
-    `healthcheck: pg_isready`, named volume, `restart: unless-stopped`.
-  - `backend` — built from `backend/Dockerfile`, `env_file: .env`,
-    `depends_on: postgres: condition: service_healthy`, its own healthcheck
-    (urllib GET `/health`), `DATABASE_URL` overridden to the `postgres` service host.
-  - `frontend` — multi-stage image, nginx reverse-proxies `/api/*` to the backend.
-- **`backend/Dockerfile`**: `python:3.12-slim`, `PYTHONDONTWRITEBYTECODE`/
-  `PYTHONUNBUFFERED`, install `requirements.txt` first (layer cache), copy
-  package, run uvicorn.
-- **`frontend/Dockerfile`**: `oven/bun:1-alpine` builder (`--frozen-lockfile`)
-  → `nginx` runtime serving `dist/`.
-- **`.dockerignore`**: backend ignores `tests/`, `pytest.ini`,
-  `requirements-dev.txt`, `.env*` (keep `.env.example`), caches.
+The template ships no containers — the whole point is that a newcomer can run it
+with a couple of commands and no infrastructure to stand up.
+
+- **Database**: SQLite, a single file created on first run (`DATABASE_URL`
+  default `sqlite+aiosqlite:///./app.db`). Nothing to install or start.
+- **Backend**: `make back-install` once, then `uvicorn main:app --reload` from
+  `backend/` (serves `:8000`). The lifespan creates the tables and seeds the
+  default admin.
+- **Frontend**: `make front-install` once, then `bun run dev` from `frontend/`
+  with `VITE_API_URL=http://localhost:8000/api/v1` so the SPA reaches the API.
+- **Production** is left to the host: build the SPA (`bun run build`) and serve
+  `dist/` behind any static host or reverse proxy that forwards `/api` to the
+  backend. The template no longer prescribes a container image.
 
 ## 7. CI (`.github/workflows/`)
 
 - Separate `backend.yml` / `frontend.yml`, **PR-only**, **path-filtered**,
   **draft-skipped** (`if: !github.event.pull_request.draft`).
-- Backend job: `docker compose up -d --build --wait postgres` → setup-python
-  3.12 → install reqs → `make backend PYTHON=python`.
+- Backend job: setup-python 3.12 → install reqs → `make backend PYTHON=python`.
+  SQLite needs no service, so there is no database step to start.
 - Frontend job: `setup-bun` → `bun install --frozen-lockfile` → `make frontend`,
   with `HUSKY=0`.
 
@@ -279,8 +272,9 @@ files; activates on `bun install`. CI sets `HUSKY=0`.
 
 - New work: `git pull` latest default branch → create a named git worktree off
   it → push a remote branch of the same name. Prefix `feat/` or `fix/`.
-- Each worktree is DB-isolated: tests derive a per-worktree DB name in conftest
-  so parallel sessions never collide; a sweep target drops orphaned DBs.
+- Each worktree is DB-isolated: tests derive a per-worktree SQLite file (under
+  the system temp dir) in conftest so parallel sessions never collide; the files
+  are disposable, so there is nothing to sweep.
 - Name each Claude session after what it's doing.
 
 ## 10. The "no-drift" meta-pattern
@@ -292,7 +286,7 @@ that first; everything else hangs off it.
 ## 11. Template `CLAUDE.md` — what to carry over
 
 Keep (generic, load-bearing):
-- Server-start guardrails (don't auto-start dev servers / compose).
+- Server-start guardrails (don't auto-start dev servers).
 - Design-system compliance (shadcn composition, tokens, color allowlist).
 - Backend file/handler/test length limits + the repo-only DB rule.
 - English-only docs/code; i18n note for the frontend.
@@ -303,7 +297,7 @@ Keep (generic, load-bearing):
 Drop (project-specific):
 - Issue labels, PR-title conventions, the issue/PR lifecycle prose.
 - The AI-agent / Gemini sections, telemetry ingestion, LHG migration.
-- Multi-tenant and PostGIS-specific notes.
+- Multi-tenant notes.
 
 ---
 
@@ -324,9 +318,7 @@ CLAUDE.md                         [S] the contract — see §11 for what to keep
 Makefile                          [V] the single task runner; CI calls these targets
 README.md                         [S] how-to-run + stack summary
 .gitignore                        [S] venv, node_modules, dist, .env, caches
-.env.example                      [S] DATABASE_URL, JWT_SECRET, DEFAULT_ADMIN_PASSWORD
-docker-compose.yml                [V] postgres + backend + frontend (§6)
-docker/postgres/Dockerfile        [V] FROM pgvector/pgvector:pg16 (no PostGIS)
+.env.example                      [S] DATABASE_URL (SQLite), JWT_SECRET, DEFAULT_ADMIN_PASSWORD
 .github/workflows/backend.yml     [V] PR-only, path-filtered, draft-skipped
 .github/workflows/frontend.yml    [V] same shape, HUSKY=0
 ```
@@ -334,18 +326,16 @@ docker/postgres/Dockerfile        [V] FROM pgvector/pgvector:pg16 (no PostGIS)
 ### Step 2 — Backend core & tooling (no domain yet; `make back-build` green)
 
 ```
-backend/Dockerfile                [V] python:3.12-slim, reqs first, uvicorn
-backend/.dockerignore             [V] ignores tests/, dev reqs, .env*
 backend/pyproject.toml            [V] ruff: select F,E,W,B (+I,UP for template); Depends allowlist
 backend/pytest.ini                [V] asyncio mode
-backend/requirements.txt          [S] fastapi, uvicorn, sqlalchemy[asyncio], asyncpg,
+backend/requirements.txt          [S] fastapi, uvicorn, sqlalchemy[asyncio], aiosqlite,
                                       pydantic, pydantic-settings, pyjwt, slowapi, python-dotenv
 backend/requirements-dev.txt      [S] ruff, pytest, pytest-asyncio, httpx
 backend/__init__.py               [S]
 backend/main.py                   [V] app + CORS + rate-limit + logging mw + lifespan + /health
 backend/core/__init__.py          [S]
 backend/core/config.py            [V] BaseSettings + lru_cache get_settings()
-backend/core/database.py          [V] async engine, SessionLocal, init_db(), URL normalize
+backend/core/database.py          [V] async engine, SessionLocal, init_db(), configure_sqlite
 backend/core/logging_middleware.py[V] logs all but /health
 backend/core/rate_limiter.py      [V] slowapi Limiter(get_remote_address)
 backend/utils/__init__.py         [S]
@@ -404,9 +394,6 @@ frontend/vite.config.ts               [S] react + tailwind + tanstack-router + t
 frontend/index.html                   [S]
 frontend/.prettierrc / .prettierignore[S]
 frontend/components.json              [S] shadcn config
-frontend/nginx.conf                   [V] serve SPA + proxy /api/*
-frontend/Dockerfile                   [V] bun builder → nginx
-frontend/.dockerignore                [V]
 frontend/.husky/pre-commit            [V] lint-staged
 frontend/eslint.config.ts             [V] flat config + local plugin wiring + max-lines 550 + color allowlist
 frontend/eslint-rules/index.ts        [V] plugin barrel

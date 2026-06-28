@@ -18,7 +18,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/app"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./app.db"
 
     JWT_SECRET: str = "change-me-in-production"
     JWT_ISSUER: str = "goldstandard"

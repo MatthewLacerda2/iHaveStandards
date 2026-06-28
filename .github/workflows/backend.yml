@@ -20,9 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Start postgres (pgvector)
-        run: docker compose up -d --build --wait postgres
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -34,6 +31,7 @@ jobs:
 
       - name: Run backend gates
         env:
-          DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/app
+          # SQLite needs no service; tests create their own file under the temp dir.
+          DATABASE_URL: sqlite+aiosqlite:///./app.db
           JWT_SECRET: ci-secret
         run: make backend PYTHON=python

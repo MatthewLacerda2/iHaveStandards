@@ -167,7 +167,7 @@ make frontend   # front-lint + front-build + front-test
 
 ## Server-start guardrails
 
-Do **not** auto-start dev servers, `docker compose up`, or long-running
+Do **not** auto-start dev servers (`uvicorn`, `vite dev`) or long-running
 processes to "check" something. Use the gates (build/test) to verify. If a human
 needs a running app, ask them to start it.
 
@@ -181,12 +181,13 @@ needs a running app, ask them to start it.
 
 - New work: `git pull` the latest default branch → create a named git worktree
   off it → push a remote branch of the same name. Prefix `feat/` or `fix/`.
-- Each worktree is DB-isolated: tests derive a per-worktree DB name so parallel
-  sessions never collide.
+- Each worktree is DB-isolated: tests derive a per-worktree SQLite database file
+  (under the system temp dir) so parallel sessions never collide.
 - Name each session after what it's doing.
 
 ## Upgrade paths (intentionally deferred in the skeleton)
 
 - **Migrations:** `init_db()` uses `create_all` (additive only). Add Alembic
-  when schema changes need to be destructive/ordered.
+  when schema changes need to be destructive/ordered — SQLite's limited
+  `ALTER TABLE` makes that the point where you outgrow the skeleton.
 - **Typed SDK:** generate `lib/schemas/` from the backend OpenAPI spec.
