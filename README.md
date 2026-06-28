@@ -6,8 +6,7 @@ your product inside a structure whose architecture and quality gates are already
 decided for you. The worked example resource is `items`: a single CRUD domain
 threaded through every layer so the pattern is obvious and copyable.
 
-The authoritative specification is [`auxmd.md`](./auxmd.md); the operating
-contract for anyone (human or agent) working in the repo is
+The operating contract for anyone (human or agent) working in the repo is
 [`CLAUDE.md`](./CLAUDE.md). This README summarizes the architecture and the
 practices — not the line-by-line implementation.
 
@@ -77,7 +76,6 @@ backend/    FastAPI · SQLAlchemy 2.0 async · SQLite · Pydantic v2 · pytest �
 frontend/   React 19 · Vite · TanStack Router/Query · Tailwind v4 · ShadCN · Vitest
 Makefile    the single task runner; CI invokes these targets
 CLAUDE.md   the operating contract
-auxmd.md    the full architecture & pattern specification
 ```
 
 ## Getting started
@@ -103,9 +101,8 @@ SQLite file, so the gates above need nothing extra.
 
 To run the app locally after the install steps: start the API from `backend/`
 with `.venv/bin/uvicorn main:app --reload` (serves on `:8000`), and the frontend
-from `frontend/` with `VITE_API_URL=http://localhost:8000/api/v1 bun run dev`.
-`VITE_API_URL` points the SPA at the local backend; the relative `/api/v1`
-default is for serving the built SPA behind a reverse proxy.
+from `frontend/` with `bun run dev`. The Vite dev server proxies `/api` to the
+backend (see `frontend/vite.config.ts`), so the SPA works with no extra config.
 
 ## Intentional non-goals (documented upgrade paths)
 

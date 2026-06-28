@@ -18,6 +18,13 @@ export default defineConfig({
     tailwindcss(),
     tsconfigPaths(),
   ],
+  server: {
+    // Dev-only: forward API calls to the local backend so the relative
+    // `/api/v1` default in lib/api/client.ts works with no extra config.
+    proxy: {
+      "/api": "http://localhost:8000",
+    },
+  },
   test: {
     globals: true,
     environment: "jsdom",
