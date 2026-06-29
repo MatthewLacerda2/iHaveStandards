@@ -63,6 +63,12 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
+# SQLite runtime database (created on first run)
+app.db
+app.db-journal
+app.db-wal
+app.db-shm
+
 # Flask stuff:
 instance/
 .webassets-cache

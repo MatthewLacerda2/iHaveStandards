@@ -5,9 +5,10 @@ import { authStore } from "@/lib/auth-store";
  * the typed `lib/api/<domain>.ts` wrappers, which call `request()` here. This
  * keeps the bearer token, base URL, and error shape in a single module.
  *
- * In production the app is served behind a reverse proxy, so the relative
- * `/api/v1` default just works. Point `VITE_API_URL` at the backend origin
- * (e.g. http://localhost:8000/api/v1) when running the dev server standalone.
+ * The relative `/api/v1` default works in dev (Vite proxies `/api` to the
+ * backend — see `vite.config.ts`) and in production when the built SPA is served
+ * behind a reverse proxy that forwards `/api`. Set `VITE_API_URL` to reach a
+ * backend on a different origin.
  */
 const API_BASE =
   (import.meta.env.VITE_API_URL as string | undefined) ?? "/api/v1";

@@ -174,7 +174,8 @@ make frontend   # front-lint + front-build + front-test
 
 ## Language & i18n
 
-- All code, comments, and docs are **English only**.
+- Code and comments are **English only**. User-facing docs (the README) may be
+  written in the user's language (Portuguese) to fit a non-technical audience.
 - User-facing frontend strings go through `i18next` (`src/i18n/`), never
   hardcoded in components.
 
@@ -182,12 +183,13 @@ make frontend   # front-lint + front-build + front-test
 
 - You may create branches and change between them so we can keep many changes stored,
   but we only really work at one thing at a time. No worktrees. Prefix `feat/` or `fix/`.
-- Each worktree is DB-isolated: tests derive a per-worktree DB name so parallel
-  sessions never collide.
-- Name each session after what it's doing.
+- Tests are DB-isolated automatically: each run uses its own SQLite file (under
+  the system temp dir, derived from the repo path), so nothing leaks between runs.
+- Name each branch after what it's doing.
 
 ## Upgrade paths (intentionally deferred in the skeleton)
 
 - **Migrations:** `init_db()` uses `create_all` (additive only). Add Alembic
-  when schema changes need to be destructive/ordered.
+  when schema changes need to be destructive/ordered — SQLite's limited
+  `ALTER TABLE` makes that the point where you outgrow the skeleton.
 - **Typed SDK:** generate `lib/schemas/` from the backend OpenAPI spec.

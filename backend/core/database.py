@@ -1,13 +1,15 @@
 """Async database engine, session factory, and bootstrap routine.
 
 `init_db()` is the only place outside `repositories/` that issues SQL, and it
-does so purely as an application-bootstrap step (extension, table creation,
-admin seed). Schema upgrades beyond additive `create_all` should go through
-Alembic; this skeleton intentionally ships no migrations.
+does so purely as an application-bootstrap step (table creation, admin seed).
+Schema upgrades beyond additive `create_all` should go through Alembic; this
+skeleton intentionally ships no migrations. SQLite's limited `ALTER TABLE`
+makes that upgrade matter sooner than it would on a server database.
 """
 
-from sqlalchemy import select, text
+from sqlalchemy import event, select
 from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
@@ -18,25 +20,54 @@ from models.base import Base
 
 
 def normalize_database_url(url: str) -> str:
-    """Coerce a plain Postgres URL to the asyncpg driver form.
+    """Coerce a driverless SQLite URL to the async aiosqlite form.
 
-    Accepts `postgres://` and `postgresql://` (as emitted by many hosting
-    providers) and rewrites them to `postgresql+asyncpg://`. URLs that already
-    specify a driver are returned unchanged.
+    Accepts a plain `sqlite://` URL and rewrites it to `sqlite+aiosqlite://`.
+    URLs that already name a driver are returned unchanged.
     """
-    if url.startswith("postgresql+"):
+    if url.startswith("sqlite+"):
         return url
-    if url.startswith("postgresql://"):
-        return "postgresql+asyncpg://" + url[len("postgresql://") :]
-    if url.startswith("postgres://"):
-        return "postgresql+asyncpg://" + url[len("postgres://") :]
+    if url.startswith("sqlite://"):
+        return "sqlite+aiosqlite://" + url[len("sqlite://") :]
     return url
+
+
+def configure_sqlite(async_engine: AsyncEngine) -> None:
+    """Make SQLite behave correctly for this app. No-op for other dialects.
+
+    Two adjustments, both applied per connection:
+
+    * **Enforce foreign keys.** SQLite ignores constraints (and `ON DELETE`
+      cascades) unless `PRAGMA foreign_keys=ON` is set on every connection.
+    * **Take over transaction control.** The pysqlite/aiosqlite driver otherwise
+      emits its own `COMMIT` around `SAVEPOINT`s, which breaks nested savepoints
+      and the test's rollback-per-test recipe. Disabling the driver's implicit
+      transactions and emitting `BEGIN` ourselves is SQLAlchemy's documented fix.
+    """
+    if async_engine.dialect.name != "sqlite":
+        return
+
+    sync_engine = async_engine.sync_engine
+
+    @event.listens_for(sync_engine, "connect")
+    def _setup_connection(dbapi_connection: object, _record: object) -> None:
+        # Hand transaction control to SQLAlchemy (disable the driver's autobegin).
+        dbapi_connection.isolation_level = None
+        # Enforce foreign keys; runs in autocommit since we control BEGIN.
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
+    @event.listens_for(sync_engine, "begin")
+    def _emit_begin(conn: object) -> None:
+        conn.exec_driver_sql("BEGIN")
 
 
 _settings = get_settings()
 DATABASE_URL = normalize_database_url(_settings.DATABASE_URL)
 
 engine = create_async_engine(DATABASE_URL, future=True)
+configure_sqlite(engine)
 SessionLocal = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
@@ -45,12 +76,11 @@ SessionLocal = async_sessionmaker(
 
 
 async def init_db() -> None:
-    """Bootstrap the database: pgvector extension, tables, default admin."""
+    """Bootstrap the database: tables, default admin."""
     # Import models so their tables are registered on `Base.metadata`.
     import models  # noqa: F401
 
     async with engine.begin() as conn:
-        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         # Additive only. Alembic is the upgrade path for non-additive changes.
         await conn.run_sync(Base.metadata.create_all)
 
