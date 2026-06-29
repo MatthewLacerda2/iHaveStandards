@@ -45,3 +45,8 @@ export function isIntrinsicElement(
 export function isUiComponentFile(filename: string): boolean {
   return /[\\/]components[\\/]ui[\\/]/.test(filename);
 }
+
+/** True when the file path is inside the API SDK layer (`lib/api`). */
+export function isApiSdkFile(filename: string): boolean {
+  return /[\\/]lib[\\/]api[\\/]/.test(filename);
+}

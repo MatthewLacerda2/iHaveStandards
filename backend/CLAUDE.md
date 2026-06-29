@@ -11,7 +11,8 @@ live in the root `Makefile` (`make backend`) and run identically in CI.
 
 - **DB access lives only in `repositories/`.** No raw SQL or ORM query in a
   handler, service, or util. `core/database.py`'s `init_db()` is the single
-  bootstrap-time exception.
+  bootstrap-time exception. `house_lint.py` enforces this: outside the DB layer,
+  the only allowed `sqlalchemy` import is the `AsyncSession` type.
 - Repositories take an `AsyncSession` and `flush()`; the **caller commits**.
   Repositories never open their own session — the test rollback depends on it.
 - All request/response bodies are Pydantic models. Type annotations are

@@ -40,6 +40,7 @@ export default tseslint.config(
       "local/no-color-literal": "error",
       "local/no-hand-rolled-form-control": "error",
       "local/no-redundant-font-utility": "error",
+      "local/no-fetch-outside-sdk": "error",
 
       // --- Color allowlist via the real theme. ---
       "better-tailwindcss/no-unregistered-classes": [
