@@ -156,8 +156,10 @@ instruction wins.
 - **Push back on dead weight.** If the user is trying to add something that
   doesn't add value to the project, you MUST push back. If you spot something
   that can be removed without losing value, you may suggest removing it.
-- **Don't create markdown or text files.** The ones you may edit are README.md
-  and CLAUDE.md, but inform the user.
+- **Don't create markdown or text files to track work, plans, or history** — that
+  is what Issues and PRs are for; loose status/plan/audit files are clutter. The
+  files you may add or edit are README.md, CLAUDE.md, and skills under
+  `.claude/skills/`; tell the user when you do.
 - **Prefer expression over description.** An expressive, declarative structure
   (code, config, a linter rule that enforces a convention) is preferred over
   prose documenting that the convention exists. Make the codebase state the rule;
@@ -195,6 +197,20 @@ make frontend   # front-lint + front-build + front-test
 - Tests are DB-isolated automatically: each run uses its own SQLite file (under
   the system temp dir, derived from the repo path), so nothing leaks between runs.
 - Name each branch after what it's doing.
+
+## Skills
+
+Reusable skills live in `.claude/skills/<name>/SKILL.md` and load automatically.
+Bundled with this template:
+
+- **brainstorming** — turn a rough idea into an agreed design, then capture it as
+  an Issue. Use before any non-trivial feature or change.
+- **writing-plans** — turn an agreed design into a concrete, step-by-step plan
+  (kept in the issue/PR, never a loose file).
+- **executing-plans** — carry a plan out in small batches, verify with
+  `make check`, and finish by opening a PR.
+- **architectural-analysis** — read-only audit for duplication, dead code, and
+  layer violations the gates can't catch.
 
 ## Upgrade paths (intentionally deferred in the skeleton)
 
