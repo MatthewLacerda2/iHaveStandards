@@ -9,6 +9,10 @@ Rules enforced:
      excluded) fails.
   3. Any ``test_*`` function under a ``tests/`` directory longer than
      ``MAX_TEST_LINES`` fails.
+  4. SQLAlchemy/DB access is confined to ``repositories/``. Outside it (and
+     ``models/`` and ``core/database.py``, the bootstrap exception), the only
+     permitted ``sqlalchemy`` import is the ``AsyncSession`` type. ``tests/`` is
+     exempt.
 
 The module is importable (rules return violation lists) and runnable as
 ``python tools/house_lint.py`` to scan the backend tree.
@@ -26,6 +30,9 @@ MAX_TEST_LINES = 50
 DATA_FILE_MARKER = "# lint: data-file"
 _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete"})
 _MARKER_SCAN_LINES = 15
+# Rule 4: the only `sqlalchemy` name importable outside the DB layer is the
+# session type used to annotate the injected session in handlers/dependencies.
+_SQLA_ALLOWED_NAMES = frozenset({"AsyncSession"})
 
 
 def _is_under_tests(path: Path) -> bool:
@@ -88,9 +95,63 @@ def check_function_lengths(path: Path, source: str) -> list[str]:
     return violations
 
 
+def _is_db_layer_exempt(path: Path) -> bool:
+    """True for files allowed to touch the DB: repositories, models, bootstrap."""
+    if _is_under_tests(path):
+        return True
+    parts = path.parts
+    if "repositories" in parts or "models" in parts:
+        return True
+    return path.name == "database.py" and "core" in parts
+
+
+def _db_access_msg(path: Path, lineno: int, what: str) -> str:
+    """Format a DB-layer violation message."""
+    return (
+        f"{path}:{lineno}: DB access outside repositories/ (imports '{what}' from "
+        f"sqlalchemy) — move queries into a repository"
+    )
+
+
+def check_db_access_layer(path: Path, source: str) -> list[str]:
+    """Rule 4: confine SQLAlchemy/DB access to ``repositories/``.
+
+    Outside ``repositories/``, ``models/``, and ``core/database.py``, the only
+    permitted ``sqlalchemy`` import is the ``AsyncSession`` type (handlers and
+    dependencies annotate the injected session with it). Any other ``sqlalchemy``
+    import — query builders, the ORM, session/engine factories — is a layer
+    violation. ``tests/`` is exempt.
+    """
+    if _is_db_layer_exempt(path):
+        return []
+    try:
+        tree = ast.parse(source, filename=str(path))
+    except SyntaxError:
+        return []  # surfaced by check_function_lengths
+    violations: list[str] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "sqlalchemy" or alias.name.startswith("sqlalchemy."):
+                    violations.append(_db_access_msg(path, node.lineno, alias.name))
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module or ""
+            if module == "sqlalchemy" or module.startswith("sqlalchemy."):
+                disallowed = {alias.name for alias in node.names} - _SQLA_ALLOWED_NAMES
+                if disallowed:
+                    violations.append(
+                        _db_access_msg(path, node.lineno, ", ".join(sorted(disallowed)))
+                    )
+    return violations
+
+
 def check_source(path: Path, source: str) -> list[str]:
     """Run every rule against a single file's source text."""
-    return check_file_length(path, source) + check_function_lengths(path, source)
+    return (
+        check_file_length(path, source)
+        + check_function_lengths(path, source)
+        + check_db_access_layer(path, source)
+    )
 
 
 def iter_python_files(root: Path) -> list[Path]:

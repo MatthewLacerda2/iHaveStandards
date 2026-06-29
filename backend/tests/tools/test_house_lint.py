@@ -44,3 +44,21 @@ def test_clean_input_passes():
     source = "@router.get('/ok')\ndef ok():\n    return 1\n"
     violations = house_lint.check_source(Path("api/v1/ok.py"), source)
     assert violations == []
+
+
+def test_db_access_outside_repositories_fails():
+    source = "from sqlalchemy import select\n"
+    violations = house_lint.check_source(Path("api/v1/items.py"), source)
+    assert any("DB access outside repositories/" in v for v in violations)
+
+
+def test_async_session_type_import_is_allowed():
+    source = "from sqlalchemy.ext.asyncio import AsyncSession\n"
+    violations = house_lint.check_source(Path("api/v1/items.py"), source)
+    assert violations == []
+
+
+def test_repositories_may_use_sqlalchemy():
+    source = "from sqlalchemy import select\n"
+    violations = house_lint.check_source(Path("repositories/items.py"), source)
+    assert violations == []
