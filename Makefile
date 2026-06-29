@@ -1,8 +1,8 @@
 # Single task runner. CI invokes these exact targets so local and CI never drift.
-# Override the interpreter in CI with: make backend PYTHON=python
-# Locally a venv is used: make backend PYTHON=.venv/bin/python (see backend/README note).
+# PYTHON auto-uses backend/.venv when present (after `make back-install`), so local
+# runs need no flag. CI overrides it explicitly: make backend PYTHON=python
 
-PYTHON ?= python3.12
+PYTHON ?= $(shell [ -x backend/.venv/bin/python ] && echo .venv/bin/python || echo python3.12)
 BUN    ?= bun
 
 .DEFAULT_GOAL := check
@@ -15,6 +15,20 @@ check: backend frontend
 
 backend: back-lint back-build back-test
 frontend: front-lint front-build front-test
+
+# ---------------------------------------------------------------------------
+# Run the app locally (backend + frontend together; Ctrl-C stops both)
+# ---------------------------------------------------------------------------
+.PHONY: dev
+dev:
+	@[ -x backend/.venv/bin/python ] || { echo "Backend not installed — run 'make back-install' first."; exit 1; }
+	@[ -d frontend/node_modules ] || { echo "Frontend not installed — run 'make front-install' first."; exit 1; }
+	@echo "Backend  -> http://localhost:8000"
+	@echo "Frontend -> http://localhost:5173   (Ctrl-C stops both)"
+	@trap 'kill 0' INT TERM EXIT; \
+	( cd backend && $(PYTHON) -m uvicorn main:app --reload ) & \
+	( cd frontend && $(BUN) run dev ) & \
+	wait
 
 # ---------------------------------------------------------------------------
 # Backend gates  (run from backend/, driven by $(PYTHON))
