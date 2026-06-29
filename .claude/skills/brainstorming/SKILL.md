@@ -5,11 +5,11 @@ description: Use BEFORE any non-trivial creative work — a new feature, page, c
 
 # Brainstorming Ideas Into Designs
 
-Turn a rough idea into an agreed design through plain, collaborative dialogue —
-then capture it as a GitHub Issue, the repo's planning artifact. The person you
-are working with is non-technical: keep the conversation about the *problem* and
-what success looks like, not the implementation. This operationalizes CLAUDE.md's
-"How we work" (solve the problem, not the solution; align before building).
+Turn a rough idea into an agreed design through plain, collaborative dialogue,
+then capture it as a GitHub Issue. The person you are working with is
+non-technical: keep the conversation about the *problem* and what success looks
+like, not the implementation — this is CLAUDE.md's "How we work" stance applied
+to a dialogue.
 
 ## The process
 
@@ -36,10 +36,8 @@ what success looks like, not the implementation. This operationalizes CLAUDE.md'
 ## After the design
 
 **Capture it as an Issue** (not a file — we never write plan/design markdown):
-- Write the agreed design as a GitHub Issue using CLAUDE.md's three parts:
-  **Context**, **Suggestion**, **Definition of done**. Add the scope tag and
-  labels per CLAUDE.md.
-- Assign the user to the issue when work is actually starting, and tell them.
+write it up per CLAUDE.md's Issues section — its three parts, scope tag, labels,
+and assignment. Follow those rules there; don't repeat them here.
 
 **If continuing to implementation:**
 - Ask: "Ready to build?" Create a `feat/` or `fix/` branch (we do **not** use

@@ -28,10 +28,10 @@ output, then say "Ready for feedback."
 
 **4. Continue** — apply any feedback, then run the next batch. Repeat until done.
 
-**5. Finish** — when all tasks are done and `make check` is green, open a PR per
-CLAUDE.md (Context / Solution / Surface / Result; assign the user; if it
-implements an issue, title it `{issue}-{branch}` and start the body with
-`Closes #{issue}`). **Never merge without the user's say-so.**
+**5. Finish** — when all tasks are done and `make check` is green, open the PR per
+CLAUDE.md's Pull Requests section (it covers the title, the four sections,
+assignment, and "never merge without the user's say-so"). Don't duplicate those
+rules here.
 
 ## Stop and ask when
 - You hit a blocker mid-batch (a missing piece, a test won't pass, a step is unclear).

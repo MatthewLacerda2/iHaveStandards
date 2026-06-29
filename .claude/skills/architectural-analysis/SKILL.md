@@ -25,22 +25,19 @@ Spend your effort on what the linters **can't** see across the whole codebase:
 3. **Cross-file dead code** (exported, imported nowhere)
 4. **Poor cohesion** (a file doing too much, even under the line limit)
 
-## What "correct architecture" means here
+## Architecture violations to hunt
 
-**Backend — 4 layers, one direction:** `api/` → `schemas/` → `repositories/` →
-`models/`, with `services/` for business logic. Look for:
-- DB access (SQLAlchemy queries / sessions) **anywhere except `repositories/`** —
-  a handler, service, or util touching the DB is a violation.
-- Repositories that open their own session instead of taking one (it breaks the
-  test rollback).
-- Business logic sitting in handlers instead of services/repositories.
+The rules themselves live in CLAUDE.md (and `backend/CLAUDE.md`,
+`frontend/CLAUDE.md`) — read them there. Your job is to find where the code
+breaks them. Common violations:
 
-**Frontend — pages never reach the network directly:** `routes/` →
-`lib/api/<domain>.ts` → `lib/api/client.ts`. Look for:
-- A route or component calling `fetch` (or otherwise hitting the network) instead
-  of going through the typed SDK.
-- Auth/token handling living anywhere but `client.ts`.
-- `lib/schemas/` drifting from the backend Pydantic models.
+**Backend** (the 4-layer rule): DB access (SQLAlchemy queries / sessions)
+anywhere but `repositories/`; a repository opening its own session instead of
+taking one (breaks the test rollback); business logic stuck in a handler.
+
+**Frontend** (pages never reach the network): a route or component calling
+`fetch` instead of the typed SDK; auth/token handling outside `client.ts`;
+`lib/schemas/` drifting from the backend models.
 
 ## The process
 

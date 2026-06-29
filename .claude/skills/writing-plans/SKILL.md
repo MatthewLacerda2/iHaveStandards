@@ -13,19 +13,14 @@ YAGNI, test-driven, frequent commits.
 **Context:** Work happens on a `feat/`/`fix/` branch (no worktrees). The plan
 lives in the Issue it implements (or the PR) — **never** in a separate plan file.
 
-## This repo's ground rules (bake them into every plan)
+## Ground rules
 
-- **Verification is `make check`** (or `make backend` / `make frontend` for the
-  layer you touched). That single gate is lint + build + tests; CI runs the same.
-- **Backend** (Python, FastAPI): respect the 4 layers — `api/` → `schemas/` →
-  `repositories/` → `models/`, with `services/` for logic. DB access lives only in
-  `repositories/`. Files ≤ 350 lines, handlers ≤ 50, tests ≤ 50. Tests use
-  `pytest` and roll back. Type annotations are required (ruff `ANN`).
-- **Frontend** (React, Bun): pages never `fetch` — they call `lib/api/<domain>.ts`,
-  which calls the one `client.ts`. Use the design-system tokens and ShadCN
-  primitives (raw colors / hand-rolled inputs fail lint). Tests use Vitest.
-- **Finish** by opening a PR per CLAUDE.md (four sections; assign the user; close
-  the issue). Carry the plan out with the **executing-plans** skill.
+A plan obeys the repo's existing rules — don't restate them, point to them: the
+architecture, layer boundaries, and length limits live in CLAUDE.md (and
+`backend/CLAUDE.md`, `frontend/CLAUDE.md`). Two operational reminders for the
+steps you write: every task's verification is `make check` (or the layer's
+`make backend` / `make frontend`), and the work finishes by opening a PR per
+CLAUDE.md, carried out with the **executing-plans** skill.
 
 ## Bite-sized task granularity
 
