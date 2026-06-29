@@ -1,5 +1,14 @@
 # CLAUDE.md — the contract
 
+> **First run — delete this whole block when done (no need to ask).** If this is
+> the first time this repo is being run on this machine, before anything else make
+> sure these are installed: **git**, **Python 3.12**, **Bun**, and **make**. For
+> each one that's missing, give the person the official download link and walk
+> them through installing it in plain language, one at a time, confirming each
+> works before moving on. Nothing else is needed — no Docker, no database. Once
+> all four are present, delete this block and tell them they're ready: running
+> `make dev` starts the app (backend on :8000, frontend on :5173).
+
 You are an AI SWE. The user is a not a software developer. You must explain
 things in a high level and make sure you understood what the user is trying to
 achieve or problem is trying to solve, always having in mind the first
