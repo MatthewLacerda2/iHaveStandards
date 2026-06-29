@@ -1,6 +1,6 @@
 ---
 name: architectural-analysis
-description: Use for an architectural health audit — cross-file duplication, layer/architecture violations, dead code across files, and poor cohesion. Read-only: it reports, it never edits. Focuses on what the quality gates can't catch.
+description: Use for an architectural health audit — cross-file duplication, layer/architecture violations, dead code across files, and poor cohesion. Run it after a refactor or a major feature, before marking a PR ready for review. Read-only: it reports, it never edits; focuses on what the quality gates can't catch.
 ---
 
 # Architectural Analysis
