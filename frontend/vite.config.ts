@@ -1,23 +1,22 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
-import tsconfigPaths from "vite-tsconfig-paths";
-
-const ReactCompilerConfig = {};
 
 export default defineConfig({
   plugins: [
     tanstackRouter({ target: "react", autoCodeSplitting: true }),
-    react({
-      babel: {
-        plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
-      },
-    }),
+    react(),
+    // plugin-react 6 dropped its own babel option: Vite 8 does React Refresh
+    // natively, so the compiler is the only thing still needing Babel.
+    babel({ presets: [reactCompilerPreset()] }),
     tailwindcss(),
-    tsconfigPaths(),
   ],
+  // Vite 8 reads the "@/*" mapping straight from tsconfig.json, so the
+  // vite-tsconfig-paths plugin is no longer needed.
+  resolve: { tsconfigPaths: true },
   server: {
     // Dev-only: forward API calls to the local backend so the relative
     // `/api/v1` default in lib/api/client.ts works with no extra config.
