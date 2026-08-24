@@ -1,6 +1,6 @@
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
-import reactCompiler from "eslint-plugin-react-compiler";
+import reactHooks from "eslint-plugin-react-hooks";
 import betterTailwind from "eslint-plugin-better-tailwindcss";
 import local from "./eslint-rules/index";
 
@@ -19,12 +19,14 @@ export default tseslint.config(
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  // React Compiler diagnostics now ship inside eslint-plugin-react-hooks
+  // (eslint-plugin-react-compiler was retired at React Compiler 1.0).
+  reactHooks.configs.flat["recommended-latest"],
   // App + plugin source.
   {
     files: ["**/*.{ts,tsx}"],
     plugins: {
       local,
-      "react-compiler": reactCompiler,
       "better-tailwindcss": betterTailwind,
     },
     settings: {
@@ -43,7 +45,7 @@ export default tseslint.config(
       "local/no-fetch-outside-sdk": "error",
 
       // --- Color allowlist via the real theme. ---
-      "better-tailwindcss/no-unregistered-classes": [
+      "better-tailwindcss/no-unknown-classes": [
         "error",
         { ignore: NON_TAILWIND_CLASSES },
       ],
@@ -55,9 +57,6 @@ export default tseslint.config(
       ],
       "@typescript-eslint/no-shadow": "error",
       "no-shadow": "off",
-
-      // --- React Compiler. ---
-      "react-compiler/react-compiler": "warn",
 
       // --- File length. ---
       "max-lines": ["error", { max: 550, skipBlankLines: false }],
@@ -79,14 +78,14 @@ export default tseslint.config(
       "local/no-legacy-text-scale": "off",
       "local/no-color-literal": "off",
       "local/no-redundant-font-utility": "off",
-      "better-tailwindcss/no-unregistered-classes": "off",
+      "better-tailwindcss/no-unknown-classes": "off",
     },
   },
   // ESLint rule sources and their tests are Node modules, not DOM/Tailwind code.
   {
     files: ["eslint-rules/**"],
     rules: {
-      "better-tailwindcss/no-unregistered-classes": "off",
+      "better-tailwindcss/no-unknown-classes": "off",
       "local/no-hand-rolled-form-control": "off",
       "local/no-color-literal": "off",
     },
