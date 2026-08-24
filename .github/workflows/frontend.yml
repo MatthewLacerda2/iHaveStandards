@@ -6,11 +6,13 @@ on:
     paths:
       - "frontend/**"
       - "Makefile"
+      - ".bun-version"
       - ".github/workflows/frontend.yml"
   pull_request:
     paths:
       - "frontend/**"
       - "Makefile"
+      - ".bun-version"
       - ".github/workflows/frontend.yml"
 
 env:
@@ -25,7 +27,8 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          # Single source of truth, so CI and local machines never drift.
+          bun-version-file: .bun-version
 
       - name: Install dependencies
         run: cd frontend && bun install --frozen-lockfile
