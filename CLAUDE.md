@@ -122,14 +122,14 @@ These labels already exist on this repo. A repo generated from this template
 starts with none of them — create them once, then never think about them again:
 
 ```sh
-gh label create architecture   --force --color 1D76DB --description "A rule the rest of the code follows"
-gh label create infrastructure --force --color 0E8A16 --description "Tools that check the work: gates, CI, harnesses"
-gh label create bug            --force --color D73A4A --description "It does the wrong thing"
+gh label create architecture   --force --color B60205 --description "A rule the rest of the code follows"
+gh label create infrastructure --force --color D93F0B --description "Tools that check the work: gates, CI, harnesses"
+gh label create bug            --force --color EE0701 --description "It does the wrong thing"
 gh label create documentation  --force --color 0075CA --description "Only words change; never waits its turn"
-gh label create foundation     --force --color 5319E7 --description "Groundwork the template was always meant to have"
+gh label create foundation     --force --color 0E8A16 --description "Groundwork the template was always meant to have"
 gh label create feature        --force --color A2EEEF --description "Someone can do something they couldn't"
-gh label create planning       --force --color FBCA04 --description "The approach isn't settled. Do not start."
-gh label create human          --force --color B60205 --description "Needs a person end to end. Do not start."
+gh label create planning       --force --color FBCA04 --description "Not decided yet, or we don't know how. Do not start."
+gh label create human          --force --color 5319E7 --description "Needs a person end to end. Do not start."
 gh label create minor          --force --color C2E0C6 --description "~30 lines or fewer; may ride along in another PR"
 ```
 
