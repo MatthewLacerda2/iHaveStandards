@@ -90,14 +90,15 @@ and here, one nobody can *describe* in the PR's four sections.
 **Stage labels are the only absolute stop, and at most one applies. Absence means
 ready.**
 
-- `idea` — might not be worth doing; parked until the user decides. **Never
-  started.**
-- `planning` — worth doing, but we don't yet know how. **Never started.**
+- `planning` — worth doing, or maybe not, but either way the approach is not
+  settled. **Never started.**
 - `human` — needs a person in the loop end to end. **Never started.**
 - *(none)* — anyone can say "do issue N" and an agent can take it from there.
 
-**The judgement lives in the label**, so put it on honestly. Broad or vague is
-what `planning` is for. A Claude-written issue **must** carry one of the three if
+**The judgement lives in the label**, so put it on honestly. Broad, vague, or
+not-obviously-worth-doing is all what `planning` is for — there is no separate
+label for an idea nobody has decided on yet, and inventing one splits a judgement
+that is already the user's. A Claude-written issue **must** carry one of the two if
 it is a breaking change, changes what the user sees or types, needs a judgement
 call, or changes a decided convention.
 
@@ -105,7 +106,7 @@ A `fix` usually should **not** carry one — it is specific, the deciding alread
 happened when the thing broke, and nothing is gained by making it wait.
 
 Primary labels (one at least): `feat` · `fix` · `refactor`. Additive, alongside a
-primary: `docs` · `idea` · `planning` · `human`. `minor` may appear alone or with
+primary: `docs` · `planning` · `human`. `minor` may appear alone or with
 anything, and means the fix is small enough to ride along in another issue's PR.
 
 ## Priority

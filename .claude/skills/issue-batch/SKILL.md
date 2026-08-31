@@ -128,7 +128,7 @@ A merge changes the graph. Whatever the merged issue blocked is fair game the
 moment it lands, so the decision is one merge wide, not one batch wide. Re-read,
 then apply priority — **refactor → fix → feat**, `docs` any time.
 
-**A stage label is the only absolute stop.** `idea`, `planning` and `human` mean
+**A stage label is the only absolute stop.** `planning` and `human` mean
 *not yet*, and no amount of the issue looking ready overrides that; only the user
 removing the label does. Everything else is startable the moment it exists,
 including an issue filed a minute ago.

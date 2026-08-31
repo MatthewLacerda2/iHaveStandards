@@ -89,16 +89,14 @@ matters later, reflect it back into the issue or spin off a new one.
   in a tech-savy approach, but this project was made for non-tech people in mind.
 - **Primary label** (at least one): `feat` (new feature/enhancement), `fix`
   (bug or problem), `refactor` (changes how we do things).
-- **Additive labels** (only alongside a primary): `docs`, `idea` (might not be
-  worth doing; parked until the user decides), `planning` (we don't yet know how
-  to implement it), `human` (can't be finished by an agent alone).
+- **Additive labels** (only alongside a primary): `docs`, `planning` (we don't
+  yet know how to implement it), `human` (can't be finished by an agent alone).
 - **`minor`** — a very small change (~30 lines or fewer), so small its
   resolution may just ride along in another issue's PR. May appear alone or with
   anything.
-- **Stage labels are the only absolute stop.** `idea`, `planning` and `human` all
-  mean **do not start**, however ready the issue looks — only the user removing
-  the label changes that. At most one applies; their absence is what "ready"
-  means. An issue Claude wrote must carry one if it is a breaking change, changes
+- **Stage labels are the only absolute stop.** `planning` and `human` both mean
+  **do not start**, however ready the issue looks — only the user removing the
+  label changes that. At most one applies; their absence is what "ready" means. An issue Claude wrote must carry one if it is a breaking change, changes
   what the user sees or types, needs a judgement call, or changes a decided
   convention. A `fix` usually should not — the deciding already happened when the
   thing broke.
