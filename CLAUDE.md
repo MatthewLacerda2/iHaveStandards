@@ -89,14 +89,31 @@ matters later, reflect it back into the issue or spin off a new one.
   in a tech-savy approach, but this project was made for non-tech people in mind.
 - **Primary label** (at least one): `feat` (new feature/enhancement), `fix`
   (bug or problem), `refactor` (changes how we do things).
-- **Additive labels** (only alongside a primary): `docs`, `planning` (we don't
-  yet know how to implement it), `human` (can't be finished by an agent alone).
+- **Additive labels** (only alongside a primary): `docs`, `idea` (might not be
+  worth doing; parked until the user decides), `planning` (we don't yet know how
+  to implement it), `human` (can't be finished by an agent alone).
 - **`minor`** — a very small change (~30 lines or fewer), so small its
   resolution may just ride along in another issue's PR. May appear alone or with
   anything.
+- **Stage labels are the only absolute stop.** `idea`, `planning` and `human` all
+  mean **do not start**, however ready the issue looks — only the user removing
+  the label changes that. At most one applies; their absence is what "ready"
+  means. An issue Claude wrote must carry one if it is a breaking change, changes
+  what the user sees or types, needs a judgement call, or changes a decided
+  convention. A `fix` usually should not — the deciding already happened when the
+  thing broke.
+- **Priority — `refactor` → `fix` → `feat`**, and `docs` never waits its turn.
+  That is *Foundations come first* applied to a queue: work built before a
+  `refactor` lands gets built the old way and rewritten after. Priority orders
+  what gets **merged**, never what gets **worked**.
 - **Assignment** — no assignee means free for grabs; an assignee means it's
   taken. When we start *actually working* an issue (not just planning), assign
   the user and tell them. Picking an issue doesn't require opening a PR yet.
+
+The **issue-write** skill has the rest: what makes each of the three parts good,
+when Claude may file one unprompted, and how relationships are recorded.
+**issue-batch** has how a set of them is worked from board to merged. Invoke them
+rather than reconstructing the steps, and tell a subagent to invoke them too.
 
 If the user postpones a change that must still happen, suggest opening an issue
 so we don't lose track of it.
@@ -114,7 +131,7 @@ description with `Closes #{issue_number}`.
   without pausing: commit, push, then merge as soon as CI is green (or
   immediately if CI doesn't run). If CI fails, stop and report instead.
 - **"Do" / "resolve" / "work" an issue** means the full chain by default, no
-  asking between steps: assign the user, create the worktree, implement, run the
+  asking between steps: assign the user, create the branch, implement, run the
   gates, push, and open a ready-for-review PR — assigned to them, closing the
   issue.
 - **If you can't finish** (environment failure, gates that won't pass, a spec
@@ -205,12 +222,16 @@ Bundled with this template:
 
 - **brainstorming** — turn a rough idea into an agreed design, then capture it as
   an Issue. Use before any non-trivial feature or change.
+- **issue-write** — write that Issue well: what each part must carry, which
+  labels, and when Claude may file one unprompted.
 - **writing-plans** — turn an agreed design into a concrete, step-by-step plan
   (kept in the issue/PR, never a loose file).
 - **executing-plans** — carry a plan out in small batches, verify with
   `make check`, and finish by opening a PR.
 - **architectural-analysis** — read-only audit for duplication, dead code, and
   layer violations the gates can't catch.
+- **issue-batch** — run a set of Issues from board to merged: what order, what
+  must not share a branch, and the path a branch takes to land here.
 
 ## Upgrade paths (intentionally deferred in the skeleton)
 

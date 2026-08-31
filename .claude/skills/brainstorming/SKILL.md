@@ -37,7 +37,10 @@ to a dialogue.
 
 **Capture it as an Issue** (not a file — we never write plan/design markdown):
 write it up per CLAUDE.md's Issues section — its three parts, scope tag, labels,
-and assignment. Follow those rules there; don't repeat them here.
+and assignment. Follow those rules there; don't repeat them here. The
+**issue-write** skill has the judgement those rules don't carry: what makes each
+part good, which stage label the idea has honestly earned, and when to push back
+instead of filing.
 
 **If continuing to implementation:**
 - Ask: "Ready to build?" Create a `feat/` or `fix/` branch (we do **not** use
