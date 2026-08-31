@@ -62,8 +62,8 @@ permission.
    user-facing string through `i18next`; the file, handler and test length limits;
    every gate in the `Makefile` and nowhere else. If the idea can only be built by
    breaking one of those, say so and propose the shape that doesn't. If it can
-   only be built by *changing* one of those, that's a `refactor` issue of its own,
-   and it goes first.
+   only be built by *changing* one of those, that's an `architecture` issue of its
+   own — or `infrastructure`, if what changes is a gate — and it goes first.
 
 ## Filing what you notice
 
@@ -71,7 +71,7 @@ Claude may open an issue autonomously, and should, for anything that will recur
 or that a tool would solve more than once — provided the benefit outweighs the
 cost of building it.
 
-**A `fix` is always filable.** The test above is about whether something is worth
+**A `bug` is always filable.** The test above is about whether something is worth
 *building*; it is never about whether a defect is worth *recording*. Keep the
 description brief and carry on. If the defect questions a decision or exposes a
 foundational crack, tell the user — that part is a judgement call.
@@ -102,21 +102,38 @@ that is already the user's. A Claude-written issue **must** carry one of the two
 it is a breaking change, changes what the user sees or types, needs a judgement
 call, or changes a decided convention.
 
-A `fix` usually should **not** carry one — it is specific, the deciding already
+A `bug` usually should **not** carry one — it is specific, the deciding already
 happened when the thing broke, and nothing is gained by making it wait.
 
-Primary labels (one at least): `feat` · `fix` · `refactor`. Additive, alongside a
-primary: `docs` · `planning` · `human`. `minor` may appear alone or with
-anything, and means the fix is small enough to ride along in another issue's PR.
+One type label, combinable with a stage label: `architecture` · `infrastructure` ·
+`bug` · `documentation` · `foundation` · `feature`. CLAUDE.md gives the question
+that decides each, and **Claude is the one who answers it** — never hand the choice
+to the user, never stall an issue over it, never ask them to learn the six. A label
+put on wrongly is changed in a click; an issue not filed is gone.
+
+When two fit, decide by what the change is *for*, not what it touches: a rule the
+rest of the code must obey is `architecture`; a tool that checks the work rather
+than doing it is `infrastructure`; a piece the template was always meant to have is
+`foundation`; something a person can now *do* is `feature`. If the answer is still
+genuinely both, take the one that comes first in the priority order — the cost of
+being early is a rebase, the cost of being late is a rewrite.
+
+`minor` is orthogonal to all of that: a size marker, not a type. It may appear
+alone or with anything, and means the change is small enough to ride along in
+another issue's PR.
 
 ## Priority
 
-**refactor → fix → feat.** `docs` never waits its turn.
+**architecture → infrastructure → bug → foundation → feature.** `documentation`
+never waits its turn.
 
-That order is CLAUDE.md's *Foundations come first* applied to a queue: `refactor`
-changes how we do things, so everything built before it lands gets built the old
-way and rewritten later. It is also the label that touches the most files, so
-landing it first is the rebase nobody else has to pay.
+That order is CLAUDE.md's *Foundations come first* applied to a queue:
+`architecture` changes the rules the rest of the code follows and `infrastructure`
+changes what checks it, so everything built before either lands gets built the old
+way and rewritten later. They are also the labels that touch the most files, so
+landing them first is the rebase nobody else has to pay. A `bug` goes ahead of new
+work because everything stacked on top of it inherits it; then `foundation` fills
+in what the template still lacks, and `feature` serves the person using it.
 
 Priority orders what gets **merged**, not what gets **worked**.
 

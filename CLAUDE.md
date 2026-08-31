@@ -87,26 +87,51 @@ matters later, reflect it back into the issue or spin off a new one.
   big, split the rest into another one.
   "Visual, Software and Redesign" are what would be "Frontend, Backend, Fullstack"
   in a tech-savy approach, but this project was made for non-tech people in mind.
-- **Primary label** (at least one): `feat` (new feature/enhancement), `fix`
-  (bug or problem), `refactor` (changes how we do things).
-- **Additive labels** (only alongside a primary): `docs`, `planning` (we don't
-  yet know how to implement it), `human` (can't be finished by an agent alone).
+- **Type label** (one), each with the question that decides it: `architecture` —
+  *are we changing a rule the rest of the code has to follow?* (which layer talks
+  to which, what the API sends, what shape the data has); `infrastructure` — *is
+  this a tool that checks the work rather than the app itself?* (the gates, CI,
+  the test harness); `bug` — *does it do the wrong thing?* (a wrong business rule
+  counts, not just a crash); `documentation` — *do only words change?*;
+  `foundation` — *is this something the template was always meant to have and
+  doesn't yet?*; `feature` — *can someone now do something they couldn't?*
+- **Claude puts the type label on, always.** The user is never blocked on picking
+  the right one and never has to learn the six: describe the thing in your own
+  words and file it. A label that lands wrong is changed in one click and nothing
+  downstream breaks in the meantime.
 - **`minor`** — a very small change (~30 lines or fewer), so small its
-  resolution may just ride along in another issue's PR. May appear alone or with
-  anything.
+  resolution may just ride along in another issue's PR. It is a size marker, not
+  a type: it may appear alone or with anything.
 - **Stage labels are the only absolute stop.** `planning` and `human` both mean
   **do not start**, however ready the issue looks — only the user removing the
   label changes that. At most one applies; their absence is what "ready" means. An issue Claude wrote must carry one if it is a breaking change, changes
   what the user sees or types, needs a judgement call, or changes a decided
-  convention. A `fix` usually should not — the deciding already happened when the
+  convention. A `bug` usually should not — the deciding already happened when the
   thing broke.
-- **Priority — `refactor` → `fix` → `feat`**, and `docs` never waits its turn.
-  That is *Foundations come first* applied to a queue: work built before a
-  `refactor` lands gets built the old way and rewritten after. Priority orders
-  what gets **merged**, never what gets **worked**.
+- **Priority — `architecture` → `infrastructure` → `bug` → `foundation` →
+  `feature`**, and `documentation` never waits its turn. That is *Foundations
+  come first* applied to a queue: work built before an `architecture` or
+  `infrastructure` change lands gets built the old way and rewritten after, and
+  work piled on top of a `bug` inherits it. Priority orders what gets **merged**,
+  never what gets **worked**.
 - **Assignment** — no assignee means free for grabs; an assignee means it's
   taken. When we start *actually working* an issue (not just planning), assign
   the user and tell them. Picking an issue doesn't require opening a PR yet.
+
+These labels already exist on this repo. A repo generated from this template
+starts with none of them — create them once, then never think about them again:
+
+```sh
+gh label create architecture   --force --color 1D76DB --description "A rule the rest of the code follows"
+gh label create infrastructure --force --color 0E8A16 --description "Tools that check the work: gates, CI, harnesses"
+gh label create bug            --force --color D73A4A --description "It does the wrong thing"
+gh label create documentation  --force --color 0075CA --description "Only words change; never waits its turn"
+gh label create foundation     --force --color 5319E7 --description "Groundwork the template was always meant to have"
+gh label create feature        --force --color A2EEEF --description "Someone can do something they couldn't"
+gh label create planning       --force --color FBCA04 --description "The approach isn't settled. Do not start."
+gh label create human          --force --color B60205 --description "Needs a person end to end. Do not start."
+gh label create minor          --force --color C2E0C6 --description "~30 lines or fewer; may ride along in another PR"
+```
 
 The **issue-write** skill has the rest: what makes each of the three parts good,
 when Claude may file one unprompted, and how relationships are recorded.
