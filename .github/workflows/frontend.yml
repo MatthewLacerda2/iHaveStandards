@@ -6,11 +6,15 @@ on:
     paths:
       - "frontend/**"
       - "Makefile"
+      - ".bun-version"
+      - ".node-version"
       - ".github/workflows/frontend.yml"
   pull_request:
     paths:
       - "frontend/**"
       - "Makefile"
+      - ".bun-version"
+      - ".node-version"
       - ".github/workflows/frontend.yml"
 
 env:
@@ -21,11 +25,19 @@ jobs:
     if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+
+      # vitest and vite run under Node even when invoked through bun, and
+      # jsdom 30 requires >=22.22.2 — so the runner's default Node is not
+      # something we can leave to chance.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          # Single source of truth, so CI and local machines never drift.
+          bun-version-file: .bun-version
 
       - name: Install dependencies
         run: cd frontend && bun install --frozen-lockfile
