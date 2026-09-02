@@ -32,7 +32,8 @@ output, then say "Ready for feedback."
 refactor or a major feature, run the **architectural-analysis** skill first and
 triage what it surfaces. Then open the PR per CLAUDE.md's Pull Requests section
 (it covers the title, the four sections, assignment, and "never merge without the
-user's say-so"). Don't duplicate those rules here.
+user's say-so"). Don't duplicate those rules here. From the open PR onward — CI,
+the merge, and what to start next — the **issue-batch** skill takes over.
 
 ## Stop and ask when
 - You hit a blocker mid-batch (a missing piece, a test won't pass, a step is unclear).

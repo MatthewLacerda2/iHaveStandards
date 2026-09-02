@@ -87,16 +87,56 @@ matters later, reflect it back into the issue or spin off a new one.
   big, split the rest into another one.
   "Visual, Software and Redesign" are what would be "Frontend, Backend, Fullstack"
   in a tech-savy approach, but this project was made for non-tech people in mind.
-- **Primary label** (at least one): `feat` (new feature/enhancement), `fix`
-  (bug or problem), `refactor` (changes how we do things).
-- **Additive labels** (only alongside a primary): `docs`, `planning` (we don't
-  yet know how to implement it), `human` (can't be finished by an agent alone).
+- **Type label** (one), each with the question that decides it: `architecture` —
+  *are we changing a rule the rest of the code has to follow?* (which layer talks
+  to which, what the API sends, what shape the data has); `infrastructure` — *is
+  this a tool that checks the work rather than the app itself?* (the gates, CI,
+  the test harness); `bug` — *does it do the wrong thing?* (a wrong business rule
+  counts, not just a crash); `documentation` — *do only words change?*;
+  `foundation` — *is this something the template was always meant to have and
+  doesn't yet?*; `feature` — *can someone now do something they couldn't?*
+- **Claude puts the type label on, always.** The user is never blocked on picking
+  the right one and never has to learn the six: describe the thing in your own
+  words and file it. A label that lands wrong is changed in one click and nothing
+  downstream breaks in the meantime.
 - **`minor`** — a very small change (~30 lines or fewer), so small its
-  resolution may just ride along in another issue's PR. May appear alone or with
-  anything.
+  resolution may just ride along in another issue's PR. It is a size marker, not
+  a type: it may appear alone or with anything.
+- **Stage labels are the only absolute stop.** `planning` and `human` both mean
+  **do not start**, however ready the issue looks — only the user removing the
+  label changes that. At most one applies; their absence is what "ready" means. An issue Claude wrote must carry one if it is a breaking change, changes
+  what the user sees or types, needs a judgement call, or changes a decided
+  convention. A `bug` usually should not — the deciding already happened when the
+  thing broke.
+- **Priority — `architecture` → `infrastructure` → `bug` → `foundation` →
+  `feature`**, and `documentation` never waits its turn. That is *Foundations
+  come first* applied to a queue: work built before an `architecture` or
+  `infrastructure` change lands gets built the old way and rewritten after, and
+  work piled on top of a `bug` inherits it. Priority orders what gets **merged**,
+  never what gets **worked**.
 - **Assignment** — no assignee means free for grabs; an assignee means it's
   taken. When we start *actually working* an issue (not just planning), assign
   the user and tell them. Picking an issue doesn't require opening a PR yet.
+
+These labels already exist on this repo. A repo generated from this template
+starts with none of them — create them once, then never think about them again:
+
+```sh
+gh label create architecture   --force --color B60205 --description "A rule the rest of the code follows"
+gh label create infrastructure --force --color D93F0B --description "Tools that check the work: gates, CI, harnesses"
+gh label create bug            --force --color EE0701 --description "It does the wrong thing"
+gh label create documentation  --force --color 0075CA --description "Only words change; never waits its turn"
+gh label create foundation     --force --color 0E8A16 --description "Groundwork the template was always meant to have"
+gh label create feature        --force --color A2EEEF --description "Someone can do something they couldn't"
+gh label create planning       --force --color FBCA04 --description "Not decided yet, or we don't know how. Do not start."
+gh label create human          --force --color 5319E7 --description "Needs a person end to end. Do not start."
+gh label create minor          --force --color C2E0C6 --description "~30 lines or fewer; may ride along in another PR"
+```
+
+The **issue-write** skill has the rest: what makes each of the three parts good,
+when Claude may file one unprompted, and how relationships are recorded.
+**issue-batch** has how a set of them is worked from board to merged. Invoke them
+rather than reconstructing the steps, and tell a subagent to invoke them too.
 
 If the user postpones a change that must still happen, suggest opening an issue
 so we don't lose track of it.
@@ -114,7 +154,7 @@ description with `Closes #{issue_number}`.
   without pausing: commit, push, then merge as soon as CI is green (or
   immediately if CI doesn't run). If CI fails, stop and report instead.
 - **"Do" / "resolve" / "work" an issue** means the full chain by default, no
-  asking between steps: assign the user, create the worktree, implement, run the
+  asking between steps: assign the user, create the branch, implement, run the
   gates, push, and open a ready-for-review PR — assigned to them, closing the
   issue.
 - **If you can't finish** (environment failure, gates that won't pass, a spec
@@ -205,12 +245,16 @@ Bundled with this template:
 
 - **brainstorming** — turn a rough idea into an agreed design, then capture it as
   an Issue. Use before any non-trivial feature or change.
+- **issue-write** — write that Issue well: what each part must carry, which
+  labels, and when Claude may file one unprompted.
 - **writing-plans** — turn an agreed design into a concrete, step-by-step plan
   (kept in the issue/PR, never a loose file).
 - **executing-plans** — carry a plan out in small batches, verify with
   `make check`, and finish by opening a PR.
 - **architectural-analysis** — read-only audit for duplication, dead code, and
   layer violations the gates can't catch.
+- **issue-batch** — run a set of Issues from board to merged: what order, what
+  must not share a branch, and the path a branch takes to land here.
 
 ## Upgrade paths (intentionally deferred in the skeleton)
 
