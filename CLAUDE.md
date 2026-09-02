@@ -241,20 +241,17 @@ make frontend   # front-lint + front-build + front-test
 ## Skills
 
 Reusable skills live in `.claude/skills/<name>/SKILL.md` and load automatically.
-Bundled with this template:
+Each one carries its own description of what it covers and when to reach for it,
+so this file does not restate them.
 
-- **brainstorming** — turn a rough idea into an agreed design, then capture it as
-  an Issue. Use before any non-trivial feature or change.
-- **issue-write** — write that Issue well: what each part must carry, which
-  labels, and when Claude may file one unprompted.
-- **writing-plans** — turn an agreed design into a concrete, step-by-step plan
-  (kept in the issue/PR, never a loose file).
-- **executing-plans** — carry a plan out in small batches, verify with
-  `make check`, and finish by opening a PR.
-- **architectural-analysis** — read-only audit for duplication, dead code, and
-  layer violations the gates can't catch.
-- **issue-batch** — run a set of Issues from board to merged: what order, what
-  must not share a branch, and the path a branch takes to land here.
+What the descriptions cannot show is the shape they make together. Four of the
+six are one pipeline, in order — **brainstorming** → **issue-write** →
+**writing-plans** → **executing-plans** — and **issue-batch** runs that pipeline
+over a set of issues instead of one. **architectural-analysis** sits outside it:
+a read-only audit, run when you want one, never a step on the way to a PR.
+
+Where a rule in this file and a skill disagree, this file wins and the skill is
+wrong.
 
 ## Upgrade paths (intentionally deferred in the skeleton)
 
